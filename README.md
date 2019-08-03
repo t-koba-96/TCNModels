@@ -1,4 +1,4 @@
-# Action segmentation using ED-TCN model for pytorch
+# Action segmentation using TCN models for pytorch
 
 ## Datasets  
 
