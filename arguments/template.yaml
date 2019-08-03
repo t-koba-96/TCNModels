@@ -1,0 +1,22 @@
+
+#Saving , Loading File Name
+save_file: 'template'
+
+
+#Model (Attention_TCN,Twostream_TCN,Dual_Attention_TCN)
+model: 'ED_TCN'
+
+
+#Dasaset setting
+dataset: 'gtea'
+
+#model setting
+num_stages: 4
+num_layers: 10
+num_f_maps: 64
+features_dim: 2048
+bz: 1
+lr: 0.0005
+num_epochs: 50
+
+
