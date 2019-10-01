@@ -22,6 +22,7 @@ def main():
     gt_path, results_dir, test_vid_list = data.evalpath(SETTING.dataset,args.split,SETTING.save_file)
 
     testing.evaluator(gt_path, results_dir, test_vid_list)
+    testing.demo(gt_path, results_dir, test_vid_list)
 
 
 if __name__ == '__main__':

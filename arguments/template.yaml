@@ -3,8 +3,8 @@
 save_file: 'template'
 
 
-#Model (Attention_TCN,Twostream_TCN,Dual_Attention_TCN)
-model: 'ED_TCN'
+#Model (multistage or singlestage)
+model: 'multistage'
 
 
 #Dasaset setting

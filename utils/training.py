@@ -8,8 +8,8 @@ from tensorboardX import SummaryWriter
 from models import network
 
 class Trainer:
-    def __init__(self, num_blocks, num_layers, num_f_maps, dim, num_classes):
-        self.model = network.MultiStageModel(num_blocks, num_layers, num_f_maps, dim, num_classes)
+    def __init__(self, net, num_classes):
+        self.model = net
         self.ce = nn.CrossEntropyLoss(ignore_index=-100)
         self.mse = nn.MSELoss(reduction='none')
         self.num_classes = num_classes

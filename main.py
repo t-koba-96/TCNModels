@@ -55,13 +55,23 @@ def main():
         actions_dict[a.split()[1]] = int(a.split()[0])
     num_classes = len(actions_dict)
 
-    trainer = training.Trainer(SETTING.num_stages, SETTING.num_layers, SETTING.num_f_maps, SETTING.features_dim, num_classes)
+    if SETTING.model == "multistage":
+        net = network.MultiStageTCN(SETTING.num_stages, SETTING.num_layers, SETTING.num_f_maps, SETTING.features_dim, num_classes)
+        net = nn.DataParallel(net)
+
+    elif SETTING.model == "singlestage":
+        net = network.SingleStageTCN(SETTING.num_layers, SETTING.num_f_maps, SETTING.features_dim, num_classes)
+        net = nn.DataParallel(net)
+
+
+    trainer = training.Trainer(net,num_classes)
+
     if args.mode == "train":
         trainloader = dataset.Dataset(num_classes, actions_dict, gt_path, features_path, sample_rate)
         trainloader.read_data(train_vid_list)
         trainer.train(weights_dir, runs_dir, trainloader, SETTING.num_epochs, SETTING.bz, SETTING.lr, device)
 
-    if args.mode == "test":
+    elif args.mode == "test":
         trainer.test(weights_dir, results_dir, features_path, test_vid_list, SETTING.num_epochs, actions_dict, device, sample_rate)
 
 

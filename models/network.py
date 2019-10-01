@@ -5,9 +5,9 @@ from . import cnn
 import copy
 import numpy as np
 
-class MultiStageModel(nn.Module):
+class MultiStageTCN(nn.Module):
     def __init__(self, num_stages, num_layers, num_f_maps, dim, num_classes):
-        super(MultiStageModel, self).__init__()
+        super(MultiStageTCN, self).__init__()
         self.stage1 = SingleStageModel(num_layers, num_f_maps, dim, num_classes)
         self.stages = nn.ModuleList([copy.deepcopy(SingleStageModel(num_layers, num_f_maps, num_classes, num_classes)) for s in range(num_stages-1)])
 
@@ -18,6 +18,26 @@ class MultiStageModel(nn.Module):
             out = s(F.softmax(out, dim=1) * mask[:, 0:1, :], mask)
             outputs = torch.cat((outputs, out.unsqueeze(0)), dim=0)
         return outputs
+
+
+
+
+class SingleStageTCN(nn.Module):
+    def __init__(self, num_layers, num_f_maps, dim, num_classes):
+        super(SingleStageTCN, self).__init__()
+        self.conv_1x1 = nn.Conv1d(dim, num_f_maps, 1)
+        self.layers = nn.ModuleList([copy.deepcopy(DilatedResidualLayer(2 ** i, num_f_maps, num_f_maps)) for i in range(num_layers)])
+        self.conv_out = nn.Conv1d(num_f_maps, num_classes, 1)
+
+    def forward(self, x, mask):
+        out = self.conv_1x1(x)
+        for layer in self.layers:
+            out = layer(out, mask)
+        out = self.conv_out(out) * mask[:, 0:1, :]
+        output = out.unsqueeze(0)
+        return output
+
+
 
 
 class SingleStageModel(nn.Module):
@@ -33,6 +53,8 @@ class SingleStageModel(nn.Module):
             out = layer(out, mask)
         out = self.conv_out(out) * mask[:, 0:1, :]
         return out
+
+
 
 
 class DilatedResidualLayer(nn.Module):

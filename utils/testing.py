@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+import os
 
 def read_file(path):
     with open(path, 'r') as f:
@@ -131,4 +133,34 @@ def evaluator(gt_path, results_dir, test_vid_list):
         print ('F1@%0.2f: %.4f' % (overlap[s], f1))
     
     return
+
+def demo(gt_path, results_dir, test_vid_list):
+    
+    list_of_videos = read_file(test_vid_list).split('\n')[:-1]
+
+    num=[]
+    Frame=[]
+    gt_label=[]
+    pr_label=[]
+
+    for vid in list_of_videos:
+        gt_file = gt_path + vid
+        gt_content = read_file(gt_file).split('\n')[0:-1]
+        
+        recog_file = results_dir + vid.split('.')[0]
+        recog_content = read_file(recog_file).split('\n')[1].split()
+
+        for i in range(len(gt_content)):
+            num.append(i+1)
+            Frame.append("%s.png" % str(i).zfill(5))
+            gt_label.append(gt_content[i])
+            pr_label.append(recog_content[i])
+
+        df = pd.DataFrame({ 'number' : num,
+                            'image' : Frame,
+                            'gt' : gt_label,
+                            'predict' : pr_label
+                            })
+        f_name = vid.split('/')[-1].split('.')[0]
+        df.to_csv(os.path.join(results_dir+"/"+f_name+".csv"))
 
