@@ -1,8 +1,4 @@
 
-#Saving , Loading File Name
-save_file: 'template'
-
-
 #Model (multistage or singlestage)
 model: 'multistage'
 
@@ -10,13 +6,16 @@ model: 'multistage'
 #Dasaset setting (gtea or 50salads or breakfast)
 dataset: 'gtea'
 
-#model setting
+# training settings
+num_epochs: 50
+batch_size: 1
+lr: 0.0005
+
+
+#model settings
 num_stages: 4
 num_layers: 10
 num_f_maps: 64
 features_dim: 2048
-bz: 1
-lr: 0.0005
-num_epochs: 50
 
 

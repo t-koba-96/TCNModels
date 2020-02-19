@@ -3,7 +3,7 @@ data/
 runs/
 weights/
 arguments/*
-!arguments/template.yaml
+!arguments/gtea.yaml
 results/
 __pycache__/
 .jpynb_checkpoints/
@@ -14,3 +14,6 @@ utils/__pycache__
 weight/__pycache__
 .ipynb_checkpoints/
 Untitled.ipynb
+*.ipynb
+scores/
+run_mydataset.sh

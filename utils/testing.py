@@ -90,7 +90,7 @@ def f_score(recognized, ground_truth, overlap, bg_class=["background"]):
     return float(tp), float(fp), float(fn)
 
 
-def evaluator(gt_path, results_dir, test_vid_list):
+def evaluator(gt_path, results_dir, scores_dir, test_vid_list, split):
     
     list_of_videos = read_file(test_vid_list).split('\n')[:-1]
 
@@ -105,7 +105,7 @@ def evaluator(gt_path, results_dir, test_vid_list):
         gt_file = gt_path + vid
         gt_content = read_file(gt_file).split('\n')[0:-1]
         
-        recog_file = results_dir + vid.split('.')[0]
+        recog_file = results_dir + vid
         recog_content = read_file(recog_file).split('\n')[1].split()
 
         for i in range(len(gt_content)):
@@ -120,9 +120,18 @@ def evaluator(gt_path, results_dir, test_vid_list):
             tp[s] += tp1
             fp[s] += fp1
             fn[s] += fn1
+    
+    # output results
+    
+    f_ptr = open(scores_dir + "/" + "split_" + split + ".txt", "w")
             
-    print ("Acc: %.4f" % (100*float(correct)/total))
-    print ('Edit: %.4f' % ((1.0*edit)/len(list_of_videos)))
+    print("Acc: %.4f" % (100*float(correct)/total))
+    f_ptr.write("Acc: %.4f" % (100*float(correct)/total))
+    f_ptr.write("\n")
+    print('Edit: %.4f' % ((1.0*edit)/len(list_of_videos)))
+    f_ptr.write('Edit: %.4f' % ((1.0*edit)/len(list_of_videos)))
+    f_ptr.write("\n")
+
     for s in range(len(overlap)):
         precision = tp[s] / float(tp[s]+fp[s])
         recall = tp[s] / float(tp[s]+fn[s])
@@ -131,7 +140,11 @@ def evaluator(gt_path, results_dir, test_vid_list):
 
         f1 = np.nan_to_num(f1)*100
         print ('F1@%0.2f: %.4f' % (overlap[s], f1))
-    
+        f_ptr.write('F1@%0.2f: %.4f' % (overlap[s], f1))
+        f_ptr.write("\n")
+
+    f_ptr.close()
+
     return
 
 def demo(gt_path, results_dir, test_vid_list):
@@ -147,7 +160,7 @@ def demo(gt_path, results_dir, test_vid_list):
         gt_file = gt_path + vid
         gt_content = read_file(gt_file).split('\n')[0:-1]
         
-        recog_file = results_dir + vid.split('.')[0]
+        recog_file = results_dir + vid
         recog_content = read_file(recog_file).split('\n')[1].split()
 
         for i in range(len(gt_content)):

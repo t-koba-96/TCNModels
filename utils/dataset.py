@@ -2,6 +2,9 @@
 import torch
 import numpy as np
 import random
+import os
+from PIL import Image
+import torchvision.transforms as transforms
 
 
 class Dataset(object):
@@ -57,5 +60,22 @@ class Dataset(object):
             mask[i, :, :np.shape(batch_target[i])[0]] = torch.ones(self.num_classes, np.shape(batch_target[i])[0])
 
         return batch_input_tensor, batch_target_tensor, mask
+
+def Image_dset(images_path, f_name, f_num, image_size = 224):
+    
+    frame_name='%s.png'
+    spatial_transform = transforms.Compose([
+                            transforms.Resize((image_size, image_size)),
+                            transforms.ToTensor(),
+                            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                             ])
+
+    img_path = os.path.join(images_path, f_name, frame_name % str(f_num).zfill(6) )
+    img = Image.open(img_path).convert("RGB")
+    img = spatial_transform(img)
+    
+    return img
+
+
 
 

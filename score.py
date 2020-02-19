@@ -19,9 +19,10 @@ def main():
     args = get_arguments()
     SETTING = Dict(yaml.safe_load(open(os.path.join('arguments',args.arg+'.yaml'))))
 
-    gt_path, results_dir, test_vid_list = data.evalpath(SETTING.dataset,args.split,SETTING.save_file)
-
-    testing.evaluator(gt_path, results_dir, test_vid_list)
+    gt_path, results_dir, scores_dir, test_vid_list = data.evalpath(SETTING.dataset,args.split,args.arg)
+    if not os.path.exists(scores_dir):
+            os.makedirs(scores_dir)
+    testing.evaluator(gt_path, results_dir, scores_dir, test_vid_list, args.split)
     testing.demo(gt_path, results_dir, test_vid_list)
 
 

@@ -4,7 +4,7 @@ import numpy as np
 import os
 import torch.nn.functional as F
 from torch import optim
-from tensorboardX import SummaryWriter
+#from tensorboardX import SummaryWriter
 from models import network
 
 class Trainer:
@@ -14,20 +14,20 @@ class Trainer:
         self.mse = nn.MSELoss(reduction='none')
         self.num_classes = num_classes
 
-    def train(self, save_dir, runs_dir, batch_gen, num_epochs, batch_size, learning_rate, device):
+    def train(self, save_dir, runs_dir, batch_gen, args, SETTING, device):
         self.model.train()
         self.model.to(device)
-        optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
+        optimizer = optim.Adam(self.model.parameters(), lr=SETTING.lr)
 
         #tensorboard file_path
-        writer = SummaryWriter(runs_dir)
+        #writer = SummaryWriter(runs_dir)
 
-        for epoch in range(num_epochs):
+        for epoch in range(SETTING.num_epochs):
             epoch_loss = 0
             correct = 0
             total = 0
             while batch_gen.has_next():
-                batch_input, batch_target, mask = batch_gen.next_batch(batch_size)
+                batch_input, batch_target, mask = batch_gen.next_batch(SETTING.batch_size)
                 batch_input, batch_target, mask = batch_input.to(device), batch_target.to(device), mask.to(device)
                 optimizer.zero_grad()
                 predictions = self.model(batch_input, mask)
@@ -46,17 +46,24 @@ class Trainer:
                 total += torch.sum(mask[:, 0, :]).item()
 
             batch_gen.reset()
-            writer.add_scalar('train/total_loss', epoch_loss , epoch)
-            torch.save(self.model.state_dict(), save_dir + "/epoch-" + str(epoch + 1) + ".model")
+            #writer.add_scalar('train/total_loss', epoch_loss , epoch)
+            if args.dataparallel:
+                torch.save(self.model.module.state_dict(), save_dir + "/epoch-" + str(epoch + 1) + ".model")
+            else:
+                torch.save(self.model.state_dict(), save_dir + "/epoch-" + str(epoch + 1) + ".model")
             torch.save(optimizer.state_dict(), save_dir + "/epoch-" + str(epoch + 1) + ".opt")
             print("[epoch %d]: epoch loss = %f,   acc = %f" % (epoch + 1, epoch_loss / len(batch_gen.list_of_examples),
                                                                float(correct)/total))
 
-    def test(self, model_dir, results_dir, features_path, vid_list_file, epoch, actions_dict, device, sample_rate):
+    def test(self, model_dir, results_dir, features_path, vid_list_file, args, epoch, actions_dict, device, sample_rate):
         self.model.eval()
         with torch.no_grad():
             self.model.to(device)
-            self.model.load_state_dict(torch.load(model_dir + "/epoch-" + str(epoch) + ".model"))
+            if args.dataparallel:
+                self.model.module.load_state_dict(torch.load(model_dir + "/epoch-" + str(epoch) + ".model"))
+            else:
+                self.model.load_state_dict(torch.load(model_dir + "/epoch-" + str(epoch) + ".model"))
+
             file_ptr = open(vid_list_file, 'r')
             list_of_vids = file_ptr.read().split('\n')[:-1]
             file_ptr.close()
@@ -74,7 +81,7 @@ class Trainer:
                 for i in range(len(predicted)):
                     recognition = np.concatenate((recognition, [list(actions_dict.keys())[list(actions_dict.values()).index(predicted[i].item())]]*sample_rate))
                 f_name = vid.split('/')[-1].split('.')[0]
-                f_ptr = open(results_dir + "/" + f_name, "w")
+                f_ptr = open(results_dir + "/" + f_name + ".txt", "w")
                 f_ptr.write("### Frame level recognition: ###\n")
                 f_ptr.write(' '.join(recognition))
                 f_ptr.close()
